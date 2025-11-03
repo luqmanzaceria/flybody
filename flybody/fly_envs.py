@@ -14,6 +14,7 @@ from flybody.tasks.flight_imitation import FlightImitationWBPG
 from flybody.tasks.walk_imitation import WalkImitation
 from flybody.tasks.walk_on_ball import WalkOnBall
 from flybody.tasks.vision_flight import VisionFlightImitationWBPG
+from flybody.tasks.walk_on_flat import WalkOnFlat
 from flybody.tasks.template_task import TemplateTask
 
 from flybody.tasks.arenas.ball import BallFloor
@@ -153,6 +154,30 @@ def walk_imitation(ref_path: str | None = None,
                                 task=task,
                                 random_state=random_state,
                                 strip_singleton_obs_buffer_dim=True)
+
+def walk_on_flat(force_actuators: bool = False,
+                 disable_wings: bool = True,
+                 random_state: np.random.RandomState | None = None):
+    """Requires a tethered fruitfly to walk on flat ground (no ball)."""
+    walker = fruitfly.FruitFly
+    arena = floors.Floor()
+
+    # Build a task that rewards the agent for forward walking on flat terrain.
+    task = WalkOnFlat(
+        walker=walker,
+        arena=arena,
+        force_actuators=force_actuators,
+        disable_wings=disable_wings,
+        joint_filter=0.01,      # smooths joint actuators
+        adhesion_filter=0.007,  # smooths foot adhesion
+        time_limit=float("inf") # effectively no episode time limit
+    )
+
+    return composer.Environment(
+        task=task,
+        random_state=random_state,
+        strip_singleton_obs_buffer_dim=True,
+    )
 
 
 def walk_on_ball(force_actuators: bool = False,
