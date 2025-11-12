@@ -15,7 +15,7 @@ from flybody.tasks.constants import (_TERMINAL_ANGVEL, _TERMINAL_LINVEL)
 class WalkOnFlat(Walking):
     """Untethered fly walking on flat ground (59-DOF control)."""
 
-    def __init__(self, claw_friction: Optional[float] = 1.0, **kwargs):
+    def __init__(self, claw_friction: Optional[float] = 2.0, **kwargs):
         super().__init__(add_ghost=False, ghost_visible_legs=False, **kwargs)
 
         # ------------------------------------------------------------
