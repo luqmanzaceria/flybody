@@ -35,25 +35,22 @@ class WalkOnFlat(Walking):
             print("[WalkOnFlat] WARNING: Could not find attachment_frame.")
 
         # ------------------------------------------------------------
-        # 🦾 Switch actuator mode to force control (muscle-like)
+        # 🦾 Switch actuator mode to position control (prevents excessive ground forces)
         # ------------------------------------------------------------
-        if not getattr(self._walker, "_force_mode_applied", False):
+        if not getattr(self._walker, "_position_mode_applied", False):
             for actuator in self._walker.mjcf_model.find_all('actuator'):
                 if actuator.tag not in ['adhesion']:
                     try:
+                        # Position control with moderate stiffness/damping to prevent bouncing
                         actuator.set_attributes(
-                            biastype=None,
-                            dyntype="none",
-                            gainprm=[1, 0, 0, 0, 0],
-                            biasprm=[0, 0, 0],
-                            ctrlrange=[-1, 1]
+                            dyntype="integrator",
+                            gainprm=[10, 0, 0, 0, 0],  # Moderate gain (kp=10)
+                            biasprm=[0, -10, 0],        # Damping (kv=-10)
                         )
-                        if hasattr(actuator, "gear"):
-                            actuator.gear = [1]
                     except Exception as e:
                         print(f"[WalkOnFlat] Skipped actuator {actuator.name}: {e}")
-            self._walker._force_mode_applied = True
-            # print("[WalkOnFlat] Converted actuators to force (motor) mode.")
+            self._walker._position_mode_applied = True
+            print("[WalkOnFlat] Converted actuators to position control mode (kp=10, kv=-10).")
 
         # ------------------------------------------------------------
         # 🎯 Keep only the 59 biologically relevant actuators
